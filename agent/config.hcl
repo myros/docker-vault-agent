@@ -14,7 +14,7 @@ auto_auth {
   sink {
     type = "file"
     config = {
-      path = "/agent/.token"
+      path = "/tmp/.token"
       mode = 0644
     }
   }
