@@ -3,8 +3,6 @@ version: '3'
 services:
   vault:
     image: hashicorp/vault:latest
-    volumes:
-      - ./vault/config:/vault/config
     ports:
       - 8200:8200
     environment:
