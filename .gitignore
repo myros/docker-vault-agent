@@ -1,0 +1,7 @@
+agent/role-id
+agent/secret-id
+nginx/*.html
+nginx/*.yaml
+!nginx/index.html
+terraform
+.history

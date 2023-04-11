@@ -1,0 +1,56 @@
+version: '3'
+
+services:
+  vault:
+    image: hashicorp/vault:latest
+    volumes:
+      - ./vault/config:/vault/config
+    ports:
+      - 8200:8200
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=root
+      - VAULT_DEV_LISTEN_ADDRESS=0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    command: vault server -dev
+
+  agent:
+    image: hashicorp/vault:latest
+    restart: always
+    ports:
+      - "18200:8200"
+    volumes:
+      - ./agent:/agent:rw
+      - ./nginx:/usr/share/nginx/html/:rw
+      - ./secrets:/secrets
+    environment:
+      VAULT_ADDR: "http://vault:8200"
+      
+    container_name: vault-agent-demo
+    entrypoint: "vault agent -log-level debug -config=/agent/config.hcl"
+
+
+  nginx:
+    image: "nginx"
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/usr/share/nginx/html
+    depends_on:
+      - agent
+
+  postgres:
+    image: "hashicorpdemoapp/product-api-db:v0.0.22"
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_DB: 'products'
+      POSTGRES_USER: 'postgres'
+      POSTGRES_PASSWORD: pass
+
+  mysql:
+    image: "hashicorp/mysql-portworx-demo"
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
