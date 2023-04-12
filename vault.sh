@@ -1,15 +1,27 @@
+#!/bin/bash
+
+echo "===> Setting ENV variables"
+
 export VAULT_ADDR=http://localhost:8200
 export VAULT_TOKEN=root
 
+
+echo "===> Setting AppRole auth method...."
+
 vault auth enable approle
 vault write auth/approle/role/agent token_policies="nginx-agent-policy"
+
+echo "===> Creating role-id and secret-id files...."
 vault read --field=role_id auth/approle/role/agent/role-id > ./agent/role-id
 vault write --field=secret_id -f auth/approle/role/agent/secret-id > ./agent/secret-id
 
+echo "===> Setting up some secrets..."
 vault kv put secret/nginx/front-page foo=bar app=nginx username=user password=pass
 
+echo "===> Importing nginx-agent policy..."
 vault policy write nginx-agent-policy ./vault/policy.hcl
 
+echo "===> PostgreSQL database secret engine..."
 vault secrets enable -path=postgres database
 vault write postgres/config/products \
     plugin_name=postgresql-database-plugin \
@@ -26,7 +38,7 @@ vault write postgres/roles/nginx \
   default_ttl="30s" \
   max_ttl="24h"
 
-
+echo "===> MySql database secret engine..."
 vault secrets enable -path=mysql database
 vault write mysql/config/items \
     plugin_name=mysql-database-plugin \
